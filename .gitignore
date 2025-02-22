@@ -40,3 +40,14 @@ Thumbs.db
 
 .nx/cache
 .nx/workspace-data
+
+# Ignore cert folder
+certificates/*
+certificates
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+test-output
+
+# Next.js
+.next
+out

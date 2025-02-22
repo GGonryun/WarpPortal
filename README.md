@@ -1,90 +1,88 @@
 # Warpportal
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## **Phase Alpha (-1): Demo and Basic Authentication**
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+### **🔹 Client Access Agent and Admin Portal**
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+Deploy Demo-Ware Tech Stack:
 
-## Finish your CI setup
+- Fullstack Typescript.
+- Next.js
+- tRPC
+- Prisma ORM with PostgreSQL.
+- Vercel for deployment.
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/PYRYHHf11G)
+Users download a **custom SSH agent** that:
 
+- Requests and obtains **short-lived SSH certificates**.
+- Communicates with our SaaS to fetch certs **on-demand**.
+- `warp ssh <node>` to connect to registered nodes.
+  - add custom information to `~/.ssh/config` to use our agent.
 
-## Generate a library
+Placeholder API services
 
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
-```
+- **User Directory API** for managing users, groups, roles, and tags.
+- **Certificate Authority API** that users can query for new certs.
 
-## Run tasks
+## **Phase Beta (0): Publicly Accessible Nodes & Core SSH Features**
 
-To build the library use:
+### **🔹 Custom SSH Agent on Client Machines**
 
-```sh
-npx nx build pkg1
-```
+Users authenticate via our **CLI (`warp ssh`)** for transparent certificate issuance:
 
-To run any task with Nx use:
+- Integrates with **IDPs** (Okta, Google, Azure AD).
+- Intercepts `ssh-agent` requests and **replaces them with our agent**.
+- **Signs and loads SSH certificates into \*\***`ssh-agent`\*\*.
 
-```sh
-npx nx <target> <project-name>
-```
+### **🔹 Machine Registration & Management Agent**
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+A **CLI-based agent** (`warp agent`) is deployed on all managed machines to:
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- **Register the machine** with our service.
+- **Configure OpenSSH to trust our CA** by updating `/etc/ssh/sshd_config`.
+- **Ensure machines only accept certificates with valid principals**.
+- **Monitor SSH sessions** and log activity in real-time.
+- **Rotate CA keys** periodically for enhanced security.
+- **Automatically provision** user management NS & PAM modules.
 
-## Versioning and releasing
+## **Phase 1: Policy Enforcement & Access Controls**
 
-To version and release the library use
+### **🔹 Server-Side CA & Policy Engine**
 
-```
-npx nx release
-```
+- A **Root Certificate Authority (CA)** is responsible for:
+  - Signing user SSH certificates **only for approved nodes**.
+  - Enforcing policies such as **allowed roles, sudo control, and session duration**.
+- Policy enforcement is dynamic:
+  - Users receive **certificates only for permitted machines**.
+  - **If revoked, access is instantly lost** (certs expire).
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+## **Phase 2: Bastion Support for Private Nodes**
 
-[Learn more about Nx release &raquo;](hhttps://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### **🔹 Proxy Host for Internal Machines**
 
-## Keep TypeScript project references up to date
+For machines **not accessible externally**, we will:
 
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
+- Deploy a **proxy SSH host** that relays connections.
+- Modify `warp agent` to **automatically route requests via the proxy**.
+- Use the same **certificate-based authentication model**, ensuring security remains intact.
 
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
+### **🔹 Automatic Bastion Discovery & Routing**
 
-```sh
-npx nx sync
-```
+- When registering a node, Warp detects if it is **behind a private network**.
+- If the node is private, Warp **suggests an appropriate bastion** automatically.
+- Users can still manually specify a bastion via `ssh -J user@bastion.example.com user@internal-server`.
+- Warp issues certificates that allow access to both the bastion and the private node.
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+## **Phase 3: Fully Isolated Node Support**
 
-```sh
-npx nx sync:check
-```
+### **🔹 Workarounds for Totally Locked-In Nodes**
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+For nodes that are completely isolated with no internet access, possible workarounds include:
 
+- **Internal Routing:** Configuring private routes within the VPC to allow communication between the node and a registered bastion.
+- **Out-of-Band Registration:** Manually associating an unreachable node with a bastion by registering it from a machine that does have network access.
+- **Periodic Sync via an Intermediate Node:** Using a registered node within the VPC as a relay to periodically sync data with Warp.
+- **VPN or Peered Networks:** Setting up a VPN connection to allow managed nodes to communicate with Warp's registration service.
+- **Cloud-Specific Solutions:** Leveraging cloud-native services like AWS Systems Manager Session Manager or Azure Bastion to establish control over isolated nodes.
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+By structuring our roadmap in this way, we ensure that Warp Portal first meets the most common use cases while progressively adding more complex features for private and locked-in networks.
