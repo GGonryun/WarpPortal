@@ -12,11 +12,7 @@ const queryClient = new QueryClient({
 
 export function TrpcProvider({ children }: { children: React.ReactNode }) {
   // NOTE: Your production URL environment variable may be different
-  const url =
-    process.env.NEXT_PUBLIC_APP_DOMAIN &&
-    !process.env.NEXT_PUBLIC_APP_DOMAIN.includes('localhost')
-      ? `https://www.${process.env.NEXT_PUBLIC_APP_DOMAIN}/api/trpc/`
-      : 'http://localhost:3000/api/trpc/';
+  const url = `http://${process.env.NEXT_PUBLIC_APP_DOMAIN}/api/trpc/`;
 
   const [trpcClient] = useState(() =>
     trpc.createClient({

@@ -51,3 +51,8 @@ test-output
 # Next.js
 .next
 out
+
+# Env files
+.env
+.env.development
+.env.production
