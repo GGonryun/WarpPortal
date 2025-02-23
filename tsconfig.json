@@ -10,7 +10,7 @@
       "path": "./packages/trpc"
     },
     {
-      "path": "./packages/test"
+      "path": "./packages/prisma"
     }
   ]
 }

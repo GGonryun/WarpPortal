@@ -2,8 +2,18 @@
   "name": "@warpportal/source",
   "version": "0.0.0",
   "license": "MIT",
+  "prisma": {
+    "schema": "./packages/prisma/schema.prisma"
+  },
   "scripts": {
-    "services:start": "docker-compose up -d"
+    "postinstall": "prisma generate",
+    "services:start": "docker-compose up -d",
+    "web": "npx nx run web:dev",
+    "link": "npx nx run-many --target=build --all",
+    "prisma:studio:local": "dotenv -e ./packages/prisma/.env -- npx prisma studio",
+    "prisma:generate:local": "dotenv -e ./packages/prisma/.env -- npx prisma generate",
+    "prisma:migrate:local": "dotenv -e ./packages/prisma/.env -- npx prisma migrate dev",
+    "prisma:push:local": "dotenv -e ./packages/prisma/.env -- npx prisma db push"
   },
   "private": true,
   "devDependencies": {
@@ -42,6 +52,7 @@
     "@mui/icons-material": "^6.4.5",
     "@mui/material": "^6.4.5",
     "@nx-tools/nx-container": "^6.2.0",
+    "@prisma/client": "^6.4.1",
     "@tanstack/react-query": "^5.66.9",
     "@trpc/client": "^11.0.0-rc.802",
     "@trpc/react-query": "^11.0.0-rc.802",
@@ -49,6 +60,7 @@
     "next": "~15.1.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-error-boundary": "^5.0.0",
     "superjson": "^2.2.2",
     "zod": "^3.24.2"
   }

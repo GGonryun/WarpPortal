@@ -54,5 +54,5 @@ out
 
 # Env files
 .env
-.env.development
+.env.local
 .env.production

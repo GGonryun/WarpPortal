@@ -18,7 +18,9 @@ export function TrpcProvider({ children }: { children: React.ReactNode }) {
     trpc.createClient({
       links: [
         loggerLink({
-          enabled: () => true,
+          enabled: () =>
+            process.env.NODE_ENV === 'development' &&
+            typeof window !== 'undefined',
         }),
         httpBatchLink({
           url,
@@ -26,6 +28,7 @@ export function TrpcProvider({ children }: { children: React.ReactNode }) {
             const fetch = getFetch();
             return fetch(input, {
               ...init,
+              credentials: 'include', // Ensures cookies are sent
             });
           },
           transformer: superjson,

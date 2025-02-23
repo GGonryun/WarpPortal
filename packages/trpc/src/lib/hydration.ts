@@ -10,7 +10,7 @@ import {
 import { createHydrationHelpers } from '@trpc/react-query/rsc';
 import { createInnerContext } from './context';
 
-export function makeQueryClient() {
+function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
@@ -26,9 +26,9 @@ export function makeQueryClient() {
   });
 }
 
-export const getQueryClient = cache(makeQueryClient);
+const getQueryClient = cache(makeQueryClient);
 const caller = createCallerFactory(appRouter)(cache(createInnerContext));
-export const { trpc, HydrateClient } = createHydrationHelpers<typeof appRouter>(
+export const { HydrateClient } = createHydrationHelpers<typeof appRouter>(
   caller,
   getQueryClient
 );

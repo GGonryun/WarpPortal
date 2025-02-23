@@ -1,4 +1,5 @@
 import { CreateNextContextOptions } from '@trpc/server/adapters/next';
+import { prisma } from '@warpportal/prisma';
 
 type Session = {
   userId: string;
@@ -11,7 +12,7 @@ interface CreateInnerContextOptions extends Partial<CreateNextContextOptions> {
 
 export async function createInnerContext(options?: CreateInnerContextOptions) {
   return {
-    db: {},
+    db: prisma,
     session: options?.session ?? null,
   };
 }
