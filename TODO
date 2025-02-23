@@ -27,7 +27,7 @@ The directory shows all users that are registered with the system.
 
 [] The policy engine determines if a user can access a node.
 
-# Extra TODO
+# Tasks
 
 [x] figure out how to get the ns server to communicate with an external server.
 [] create a mock User Directory API.
