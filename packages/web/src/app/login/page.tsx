@@ -1,11 +1,8 @@
 import { Login } from '@mui/icons-material';
-import { Box, Button, Stack, Typography } from '@mui/material';
-import { createStaticTrpc } from '@warpportal/trpc/server';
+import { Box, Button, Stack } from '@mui/material';
 import Image from 'next/image';
 
 export default async function Page() {
-  const trpc = await createStaticTrpc();
-  const data = await trpc.sayHello.fetch();
   return (
     <Box
       sx={{
@@ -33,7 +30,6 @@ export default async function Page() {
             Continue with Okta
           </Button>
         </Box>
-        <Typography>{data.greeting}</Typography>
       </Stack>
     </Box>
   );
