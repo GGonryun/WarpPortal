@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "out-tsc/prontera",
+    "types": ["node", "express"],
+    "rootDir": "src",
+    "tsBuildInfoFile": "out-tsc/prontera/tsconfig.app.tsbuildinfo"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [],
+  "references": [
+    {
+      "path": "../prisma/tsconfig.lib.json"
+    }
+  ]
+}

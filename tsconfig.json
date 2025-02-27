@@ -11,6 +11,12 @@
     },
     {
       "path": "./packages/prisma"
+    },
+    {
+      "path": "./packages/prontera"
+    },
+    {
+      "path": "./packages/shared"
     }
   ]
 }

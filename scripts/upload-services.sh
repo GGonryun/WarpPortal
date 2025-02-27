@@ -1,5 +1,6 @@
 #!/bin/bash
 HOST_IP=34.82.210.28
+USER_IDENTITY=miguel-campos
 
 SERVICE_ROOT=$HOME/src/warpportal
 CERTIFICATE_ROOT=$SERVICE_ROOT/certificates
@@ -27,7 +28,7 @@ echo "🎉 Certificate file found!"
 
 # resign our certificate
 echo "🔐 Resigning certificate"
-ssh-keygen -s $ROOT_CERT_FILE_PATH -I $PRIVATE_KEY_FILE_PATH -n miguel -V +1h -z 1 $PUBLIC_KEY_FILE_PATH
+ssh-keygen -s $ROOT_CERT_FILE_PATH -I $PRIVATE_KEY_FILE_PATH -n $USER_IDENTITY -V +1h -z 1 $PUBLIC_KEY_FILE_PATH
 echo "🎉 Certificate resigned!"
 
 
@@ -45,7 +46,7 @@ do
     echo "🎉 $SERVICE built!"
 
     echo "🚀 Publishing $SERVICE"
-    scp -i $PRIVATE_KEY_FILE_PATH -o CertificateFile=$CERTIFICATE_FILE_PATH $OUTPUT_FILE miguel@$HOST_IP:~/
+    scp -i $PRIVATE_KEY_FILE_PATH -o CertificateFile=$CERTIFICATE_FILE_PATH $OUTPUT_FILE $USER_IDENTITY@$HOST_IP:~/
     echo "🎉 $SERVICE published!"
 done
 echo "🎉 All services published!"

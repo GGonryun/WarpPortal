@@ -28,4 +28,4 @@ export async function createContext() {
 }
 
 export type InnerContext = Awaited<ReturnType<typeof createInnerContext>>;
-export type Context = Awaited<ReturnType<typeof createContext>>;
+export type TrpcContext = Awaited<ReturnType<typeof createContext>>;
