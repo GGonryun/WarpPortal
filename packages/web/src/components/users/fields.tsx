@@ -15,7 +15,8 @@ export const ShellSelect: React.FC<{
   shell: ShellSchema;
   setShell: React.Dispatch<React.SetStateAction<ShellSchema>>;
   helperText?: string;
-}> = ({ defaultShell, shell, setShell, helperText }) => {
+  disabled?: boolean;
+}> = ({ defaultShell, shell, setShell, helperText, disabled }) => {
   return (
     <FormControl>
       <InputLabel id="select-shell-label">Shell</InputLabel>
@@ -23,6 +24,7 @@ export const ShellSelect: React.FC<{
         labelId="select-shell-label"
         id="select-shell"
         label="Shell"
+        disabled={disabled}
         defaultValue={defaultShell}
         value={shell}
         onChange={(e) => setShell(e.target.value as ShellSchema)}
