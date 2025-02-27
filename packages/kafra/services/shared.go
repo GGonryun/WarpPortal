@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"os"
+	"os/exec"
 )
 
 func getEnvironment(key string, fallback string) string {
@@ -12,4 +13,11 @@ func getEnvironment(key string, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+func execCommand(command []string) error {
+	cmd := exec.Command(command[0], command[1:]...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

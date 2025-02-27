@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -132,11 +133,20 @@ func getShadow(c *gin.Context) {
 	c.JSON(http.StatusOK, shadowData)
 }
 
-func StartNameServiceSwitchProxy() {
+func startNameServiceSwitchProxy() {
 	r := gin.Default()
 	r.GET("/passwd", getPasswd)
 	r.GET("/group", getGroup)
 	r.GET("/shadow", getShadow)
 
 	r.Run("localhost:9669")
+}
+
+func NameServiceSwitchProxy(command string) {
+	switch command {
+	case "start":
+		startNameServiceSwitchProxy()
+	default:
+		fmt.Printf("Unknown command for NameServiceSwitchProxy: %s\n", command)
+	}
 }

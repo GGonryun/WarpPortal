@@ -3,13 +3,20 @@ package services
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/exec"
 
 	"github.com/redis/go-redis/v9"
 )
 
-func StartProactiveListener() {
+func ProactiveListener(command string) {
+	switch command {
+	case "start":
+		startProactiveListener()
+	default:
+		fmt.Printf("Unknown command for ProactiveListener: %s\n", command)
+	}
+}
+
+func startProactiveListener() {
 	fmt.Println("Listening to Redis")
 	ctx := context.Background()
 
@@ -35,12 +42,4 @@ func StartProactiveListener() {
 			}
 		}
 	}
-}
-
-func execCommand(command []string) error {
-	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	return err
 }
