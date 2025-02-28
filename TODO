@@ -1,42 +1,23 @@
-# User Stories
+1. Set up the NSS server so that it returns the users in the database.
+2. Set up the Credential Authentication module using AuthorizedKeysCommand in the sshd_config.
+   2.1. the certificate is signed by the CA.
+   2.2. the certificate is granted to the user.
+   2.3. the certificate matches the host name on the server.
+   2.4. the certificate matches the principal name of the user.
+   2.5. the certificate has not been revoked by the CA. (can be a 5 minute long certificate to bypass this restriction)
+   2.6. add the user to the `sudo_admins` group if the certificate includes the 'sudo' grant.
+3. Create a PAM sshd session module that creates the user's home directory and gives the user ownership on their first sign up if the user doesn't exist in the /etc/passwd file.
+4. Create a PAM sshd session module that removes the user from sudo_admins on log out.
+5. Listen to a revocation signal from Kafra that automatically logs the user out of the system.
+6. Create a registration script that registers a server with Prontera and uploads information like hostname and more.
+7. Create the policy engine that checks to see what permissions a user has on a server.
+8. Create the Warp CLI that allows the user to generate certificates for registered servers.
+9. Allow a user to send bash scripts to the server for execution. This would allow us to log into servers by inserting data into the authorized_keys file.
 
-[] A user cannot gain access to a node that they do not own.
-[] A user cannot gain access to a node that is not in our inventory.
+--- Stretch Goals ---
 
-# Abstractions
-
-User access is controlled by inventory, directory, and the policy engine.
-
-## Inventory
-
-The inventory shows all servers that are registered with the system.
-
-[] Servers have attributes (key value pairs)
-
-[] Servers can import metadata from external systems.
-
-## Directory
-
-The directory shows all users that are registered with the system.
-
-[] Users have attributes (key value pairs)
-
-[] Users can import attributes from external systems.
-
-## Policy Engine
-
-[] The policy engine determines if a user can access a node.
-
-# Tasks
-
-[x] figure out how to get the ns server to communicate with an external server.
-[] create a mock User Directory API.
-[] create a custom ns node server on the machine that interacts with the User Directory API.
-
-[] figure out how to get PAM scripts to run so that we can add the user to the `/etc/passwd` file using PAM.
-[] lock down user sudo access.
-
-[] automate the certificate generation process with an API endpoint.
-[] Management CLI: prepare a machine for WarpPortal.
-[] Client CLI: log a user in, intercept ssh-agent requests, request signed certificates, resolve server access.
-[] create a mock policy engine
+0. Create an installation script that configures a node from scratch for certificate based authentication.
+1. Create a PAM sudo module that frequently checks Prontera for sudo access
+2. Create a PAM su module that gives the user su permissions if the certificate is valid.
+3. Create a watchdog service that removes access if any kafra service starts failing.
+4. Create an audit service that sends recent commands to Prontera for logging.
