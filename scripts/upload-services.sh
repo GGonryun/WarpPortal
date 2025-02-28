@@ -47,6 +47,12 @@ do
 
     echo "🚀 Publishing $SERVICE"
     scp -i $PRIVATE_KEY_FILE_PATH -o CertificateFile=$CERTIFICATE_FILE_PATH $OUTPUT_FILE $USER_IDENTITY@$HOST_IP:~/
-    echo "🎉 $SERVICE published!"
+    # check if scp failed.
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to publish $SERVICE"
+        exit 1
+    else
+        echo "🎉 $SERVICE published!"
+    fi
 done
 echo "🎉 All services published!"

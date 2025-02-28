@@ -21,3 +21,5 @@ func execCommand(command []string) error {
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
+
+var PronteraUrl = getEnvironment("PRONTERA_URL", "http://localhost:3333")

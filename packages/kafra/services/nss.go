@@ -13,7 +13,7 @@ type NSS struct {
 	ServiceURL string
 }
 
-func (n *NSS) fetchFromProntera(endpoint string, c *gin.Context, result interface{}) error {
+func (n *NSS) fetchFromProntera(endpoint string, c *gin.Context, result any) error {
 	url := fmt.Sprintf("%s/%s?%s", n.ServiceURL, endpoint, c.Request.URL.RawQuery)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -56,7 +56,7 @@ func (n *NSS) getShadow(c *gin.Context) {
 }
 
 func startNameServiceSwitchProxy() {
-	nss := NSS{ServiceURL: getEnvironment("PRONTERA_URL", "http://localhost:3333")}
+	nss := NSS{ServiceURL: PronteraUrl}
 	r := gin.Default()
 	gin.SetMode(gin.DebugMode)
 
