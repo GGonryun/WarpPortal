@@ -5,10 +5,7 @@ import {
   MenuItem,
   FormHelperText,
 } from '@mui/material';
-import {
-  ShellSchema,
-  SHELL_SCHEMA_OPTIONS,
-} from '../../../../shared/src/lib/shared';
+import { ShellSchema, SHELL_SCHEMA_OPTIONS } from '@warpportal/shared';
 
 export const ShellSelect: React.FC<{
   defaultShell: ShellSchema;

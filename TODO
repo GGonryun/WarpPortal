@@ -1,23 +1,24 @@
 1. ~~Set up the NSS server so that it returns the users in the database.~~
-2. Set up the Credential Authentication module using AuthorizedKeysCommand in the sshd_config.
-   2.1. the certificate is signed by the CA.
-   2.2. the certificate is granted to the user.
-   2.3. the certificate matches the host name on the server.
-   2.4. the certificate matches the principal name of the user.
-   2.5. the certificate has not been revoked by the CA. (can be a 5 minute long certificate to bypass this restriction)
+2. ~~Set up the Credential Authentication module using AuthorizedKeysCommand in the sshd_config.~~
+   ~~2.1. the certificate is signed by the CA.~~
+   ~~2.2. the certificate is granted to the user.~~
+   ~~2.3. the certificate matches the principal name of the user.~~
+   ~~2.4. the certificate's principal has a policy granting access to the server.~~
+   ~~2.5. the certificate has not been revoked by the CA.~~
+3. Create the Warp CLI that allows the user to generate certificates for registered servers.
+4. Create a PAM sshd session module that creates the user's home directory and gives the user ownership on their first sign up if the user doesn't exist in the /etc/passwd file.
    2.6. add the user to the `sudo_admins` group if the certificate includes the 'sudo' grant.
-3. Create a PAM sshd session module that creates the user's home directory and gives the user ownership on their first sign up if the user doesn't exist in the /etc/passwd file.
-4. Create a PAM sshd session module that removes the user from sudo_admins on log out.
-5. Listen to a revocation signal from Kafra that automatically logs the user out of the system.
-6. Create a registration script that registers a server with Prontera and uploads information like hostname and more.
-7. Create the policy engine that checks to see what permissions a user has on a server.
-8. Create the Warp CLI that allows the user to generate certificates for registered servers.
+5. Create a PAM sshd session module that removes the user from sudo_admins on log out.
+6. Listen to a revocation signal from Kafra that automatically logs the user out of the system.
+7. Create a registration script that registers a server with Prontera and uploads information like hostname and more.
+8. Create the policy engine that checks to see what permissions a user has on a server.
+
 9. Allow a user to send bash scripts to the server for execution. This would allow us to log into servers by inserting data into the authorized_keys file.
 
 --- Stretch Goals ---
 
 0. Create an installation script that configures a node from scratch for certificate based authentication.
-1. Create a PAM sudo module that frequently checks Prontera for sudo access
+1. Create a PAM sudo session module that checks with the the Prontera portal if the user has sudo access
 2. Create a PAM su module that gives the user su permissions if the certificate is valid.
 3. Create a watchdog service that removes access if any kafra service starts failing.
 4. Create an audit service that sends recent commands to Prontera for logging.

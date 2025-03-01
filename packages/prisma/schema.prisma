@@ -13,10 +13,36 @@ model User {
   email          String           @unique
   name           String
   shell          String
-  local          String
+  local          String           @unique
   domain         String
   hash           Int
   UserAttributes UserAttributes[]
+  Certificates   Certificate[]
+}
+
+enum PolicyAction {
+  SUDO
+  ALLOW
+  DENY
+}
+
+model Policy {
+  id          String       @id @default(cuid())
+  source      String
+  destination String
+  action      PolicyAction
+}
+
+model Certificate {
+  id          String    @id @default(cuid())
+  fingerprint String    @unique
+  serial      BigInt    @unique
+  publicKey   String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  revokedAt   DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime
 }
 
 model UserAttributes {
