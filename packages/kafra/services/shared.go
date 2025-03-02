@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"packages/kafra/settings"
 	"time"
 )
 
@@ -23,17 +24,14 @@ func execCommand(command []string) error {
 	return cmd.Run()
 }
 
-var PronteraUrl = getEnvironment("PRONTERA_URL", "http://localhost:3333")
-
 func writeToLogs(content string) error {
-	logFile := getEnvironment("LOG_FILE_PATH", "/var/log/kafra.log")
 	// create the file and directory if they don't exist
-	logDir := logFile[:len(logFile)-len("kafra.log")]
+	logDir := settings.LOG_FILE_PATH[:len(settings.LOG_FILE_PATH)-len("kafra.log")]
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		return fmt.Errorf("error creating directory: %w", err)
 	}
 	// open the file in append mode
-	file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(settings.LOG_FILE_PATH, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("error opening file: %w", err)
 	}

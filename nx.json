@@ -1,7 +1,10 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals"
+    ],
     "production": [
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
@@ -47,7 +50,9 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["packages/prontera-e2e/**/*"]
+      "exclude": [
+        "packages/bulletin-e2e/**/*"
+      ]
     },
     "@nx-go/nx-go",
     {
@@ -63,7 +68,9 @@
   ],
   "targetDefaults": {
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     }
   },
   "generators": {

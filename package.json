@@ -11,7 +11,7 @@
     "web": "npx nx run web:dev",
     "link": "npx nx run-many --target=build --all",
     "tunnel:redis": "ngrok tcp 6379",
-    "tunnel:prontera": "lt --port 3333",
+    "tunnel:bulletin": "lt --port 3333",
     "redis": "npx redis-cli",
     "prisma:studio:local": "dotenv -e ./packages/prisma/.env -- npx prisma studio",
     "prisma:generate:local": "dotenv -e ./packages/prisma/.env -- npx prisma generate",

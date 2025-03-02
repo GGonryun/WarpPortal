@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"packages/kafra/settings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +14,7 @@ type NSS struct {
 	ServiceURL string
 }
 
-func (n *NSS) fetchFromProntera(endpoint string, c *gin.Context, result any) error {
+func (n *NSS) fetchFromBulletin(endpoint string, c *gin.Context, result any) error {
 	url := fmt.Sprintf("%s/%s?%s", n.ServiceURL, endpoint, c.Request.URL.RawQuery)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -30,7 +31,7 @@ func (n *NSS) fetchFromProntera(endpoint string, c *gin.Context, result any) err
 
 func (n *NSS) getPasswd(c *gin.Context) {
 	var passwdData any
-	if err := n.fetchFromProntera("guild/passwd", c, &passwdData); err != nil {
+	if err := n.fetchFromBulletin("guild/passwd", c, &passwdData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -39,7 +40,7 @@ func (n *NSS) getPasswd(c *gin.Context) {
 
 func (n *NSS) getGroup(c *gin.Context) {
 	var groupData any
-	if err := n.fetchFromProntera("guild/group", c, &groupData); err != nil {
+	if err := n.fetchFromBulletin("guild/group", c, &groupData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -48,7 +49,7 @@ func (n *NSS) getGroup(c *gin.Context) {
 
 func (n *NSS) getShadow(c *gin.Context) {
 	var shadowData any
-	if err := n.fetchFromProntera("guild/shadow", c, &shadowData); err != nil {
+	if err := n.fetchFromBulletin("guild/shadow", c, &shadowData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -56,7 +57,7 @@ func (n *NSS) getShadow(c *gin.Context) {
 }
 
 func startNameServiceSwitchProxy() {
-	nss := NSS{ServiceURL: PronteraUrl}
+	nss := NSS{ServiceURL: settings.BULLETIN_URL}
 	r := gin.Default()
 	gin.SetMode(gin.DebugMode)
 

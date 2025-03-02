@@ -12,6 +12,8 @@ Kafra is a broader service that manages Warp Portal Hosts. It is responsible for
 
 ## Start NSS Proxy
 
+- Before running the NSS Proxy please modify the settings file to your needs.
+
 ```bash
-PRONTERA_URL=http://localhost:8080 kafra nss start
+kafra nss start
 ```

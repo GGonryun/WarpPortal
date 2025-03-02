@@ -1,11 +1,11 @@
 {
-  "name": "@warpportal/prontera",
+  "name": "@warpportal/bulletin",
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "name": "prontera",
+    "name": "bulletin",
     "projectType": "application",
-    "sourceRoot": "packages/prontera/src",
+    "sourceRoot": "packages/bulletin/src",
     "targets": {
       "serve": {
         "executor": "@nx/js:node",
@@ -14,15 +14,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "prontera:build",
+          "buildTarget": "bulletin:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "prontera:build:development"
+            "buildTarget": "bulletin:build:development"
           },
           "production": {
-            "buildTarget": "prontera:build:production"
+            "buildTarget": "bulletin:build:production"
           }
         }
       }

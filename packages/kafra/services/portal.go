@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"packages/kafra/settings"
 )
 
 func PortalProcessor(command string) {
@@ -49,7 +50,7 @@ func checkPortalAccess(bypass bool) {
 
 	publicKey := fmt.Sprintf("%s %s %s", keyType, cert, user)
 
-	logMsg := fmt.Sprintf("Checking portal access for server '%s' using public key '%s'", hostname, publicKey)
+	logMsg := fmt.Sprintf("Checking portal access for '%s' to server '%s' using public key '%s'", user, hostname, "<redacted>")
 
 	err = writeToLogs(logMsg)
 	if err != nil {
@@ -69,7 +70,7 @@ func checkPortalAccess(bypass bool) {
 		return
 	}
 
-	url := fmt.Sprintf("%s/portal/access", PronteraUrl)
+	url := fmt.Sprintf("%s/portal/access", settings.BULLETIN_URL)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		log.Println("Error making request:", err)

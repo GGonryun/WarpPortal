@@ -13,7 +13,7 @@
       "path": "./packages/prisma"
     },
     {
-      "path": "./packages/prontera"
+      "path": "./packages/bulletin"
     },
     {
       "path": "./packages/shared"

@@ -1,6 +1,5 @@
 import { User, prisma } from '@warpportal/prisma';
 import { Request, Response, Router } from 'express';
-import { guildRouter } from './router';
 
 export type ShadowEntry = {
   // User's login name should match pw_name

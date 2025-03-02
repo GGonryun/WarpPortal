@@ -17,18 +17,8 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// duped from kafra.
-func getEnvironment(key string, fallback string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		// fmt.Printf("Environment variable %s not set, using fallback value %s\n", key, fallback)
-		return fallback
-	}
-	return value
-}
-
-var PRONTERA_URL = getEnvironment("PRONTERA_URL", "http://localhost:3333")
-var CONFIG_PATH = getEnvironment("CONFIG_PATH", "/Users/miguelcampos/.warp")
+var BULLETIN_URL = "https://blue-snakes-cry.loca.lt"
+var CONFIG_PATH = "/Users/miguelcampos/.warp"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -168,7 +158,7 @@ func requestCertificate(publicKey, email string) (string, error) {
 		return "", err
 	}
 
-	resp, err := http.Post(PRONTERA_URL+"/portal/issue",
+	resp, err := http.Post(BULLETIN_URL+"/portal/issue",
 		"application/json",
 		bytes.NewBuffer(requestBody),
 	)
@@ -194,7 +184,7 @@ func requestCertificate(publicKey, email string) (string, error) {
 func requestTargetInfo(email, hostname string) (TargetInfo, error) {
 	empty := TargetInfo{Target: ""}
 
-	resp, err := http.Get(fmt.Sprintf("%s/portal/target?email=%s&hostname=%s", PRONTERA_URL, email, hostname))
+	resp, err := http.Get(fmt.Sprintf("%s/portal/target?email=%s&hostname=%s", BULLETIN_URL, email, hostname))
 	if err != nil {
 		return empty, err
 	}

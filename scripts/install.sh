@@ -5,9 +5,12 @@ set -e  # Exit immediately if a command fails
 REPO_URL="https://github.com/gmjosack/nss_http.git"
 TARGET_DIR=/usr/local/src/nss_http
 KAFRA_PATH=/usr/local/bin/kafra
-WRAPPER_PATH=/usr/local/bin/kafra-wrapper.sh
 LOG_FILE_PATH=/var/log/kafra.log
-PRONTERA_URL=https://quick-ravens-notice.loca.lt
+SUDO_GROUP_NAME=warp-admins
+SUDOERS_FILE="/etc/sudoers.d/warp"
+
+
+
 
 echo "🔍 Checking if the script is run as root..."
 if [ "$(id -u)" -ne 0 ]; then
@@ -91,22 +94,6 @@ sudo sed -i.bak 's/^group:.*/# &\ngroup:          files systemd http/' /etc/nssw
 sudo sed -i.bak 's/^shadow:.*/# &\nshadow:         files http/' /etc/nsswitch.conf
 echo "✅ nsswitch.conf updated!"
 
-# deploy the wrapper script /usr/local/bin/kafra-wrapper.sh
-echo "🔧 Deploying wrapper script to $WRAPPER_PATH..."
-sudo tee "$WRAPPER_PATH" > /dev/null << EOF
-#!/bin/bash
-
-# Manually set environment variables
-export PRONTERA_URL=$PRONTERA_URL
-export ANOTHER_VAR=$LOG_FILE_PATH
-
-# Pass arguments to the actual command
-exec /usr/local/bin/kafra portal access "\$@"
-EOF
-sudo chmod +x "$WRAPPER_PATH"
-sudo chown root:root "$WRAPPER_PATH"
-echo "✅ Wrapper script deployed!"
-
 echo "🔧 Updating sshd_config..."
 # Remove existing occurrences of the settings to avoid duplicates
 sudo sed -i '/^AllowUsers /d' /etc/ssh/sshd_config
@@ -116,7 +103,7 @@ sudo sed -i '/^ChallengeResponseAuthentication /d' /etc/ssh/sshd_config
 sudo sed -i '/^AuthorizedKeysCommand /d' /etc/ssh/sshd_config
 sudo sed -i '/^AuthorizedKeysCommandUser /d' /etc/ssh/sshd_config
 # Append new settings at the end of the file
-echo -e "AllowUsers *\nPasswordAuthentication no\nAuthenticationMethods publickey\nChallengeResponseAuthentication no\nAuthorizedKeysCommand /usr/local/bin/kafra-wrapper.sh %t %k %u\nAuthorizedKeysCommandUser root" | sudo tee -a /etc/ssh/sshd_config
+echo -e "AllowUsers *\nPasswordAuthentication no\nAuthenticationMethods publickey\nChallengeResponseAuthentication no\nAuthorizedKeysCommand $KAFRA_PATH %t %k %u\nAuthorizedKeysCommandUser root" | sudo tee -a /etc/ssh/sshd_config
 echo "✅ sshd_config updated!"
 
 echo "🔧 Updating /etc/pam.d/sshd..."
@@ -130,6 +117,23 @@ else
     echo "⚪ Session processor already exists in /etc/pam.d/sshd"
 fi
 echo "✅ /etc/pam.d/sshd updated!"
+
+# Create the sudoer's group if it doesn't exist
+echo "🔧 Creating sudoer's group: $SUDO_GROUP_NAME..."
+if ! getent group "$SUDO_GROUP_NAME" > /dev/null; then
+  groupadd "$SUDO_GROUP_NAME"
+  echo "✅ Group $SUDO_GROUP_NAME created!"
+else
+  echo "✅ Group $SUDO_GROUP_NAME already exists."
+fi
+
+#configure sudoers file
+echo "🔧 Configuring sudoers file: $SUDOERS_FILE..."
+sudo tee "$SUDOERS_FILE" > /dev/null << EOF
+# Allow members of the warp-admins group to execute commands without a password
+%warp-admins ALL=(ALL) NOPASSWD: ALL
+EOF
+sudo chmod 440 "$SUDOERS_FILE"
 
 echo "🔄 Restarting sshd..."
 sudo systemctl restart sshd
