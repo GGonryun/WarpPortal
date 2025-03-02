@@ -1,5 +1,6 @@
 import { User, prisma } from '@warpportal/prisma';
-import { Application, Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
+import { guildRouter } from './router';
 
 export type ShadowEntry = {
   // User's login name should match pw_name
@@ -31,21 +32,22 @@ export const userToShadowData = (user: User): ShadowEntry => ({
   sp_pwdp: '$1$BXZIu72k$S7oxt9hBiBl/O3Rm3H4Q30',
 });
 
-export const shadowRouter = (app: Application) =>
-  app.get('/shadow', async (req: Request, res: Response) => {
-    const name = req.query.name as string;
+export const shadowRouter: Router = Router({ mergeParams: true });
 
-    if (name) {
-      const user = await prisma.user.findFirst({
-        where: {
-          local: name,
-        },
-      });
-      if (user) {
-        res.json(userToShadowData(user));
-        return;
-      }
+shadowRouter.get('/', async (req: Request, res: Response) => {
+  const name = req.query.name as string;
+
+  if (name) {
+    const user = await prisma.user.findFirst({
+      where: {
+        local: name,
+      },
+    });
+    if (user) {
+      res.json(userToShadowData(user));
+      return;
     }
-    // TODO: in the examples we send back groups but for some reason this causes ssh to hang unless we 404 on the general queries.
-    res.sendStatus(404);
-  });
+  }
+  // TODO: in the examples we send back groups but for some reason this causes ssh to hang unless we 404 on the general queries.
+  res.sendStatus(404);
+});

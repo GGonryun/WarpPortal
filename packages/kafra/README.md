@@ -9,3 +9,9 @@ Kafra is a broader service that manages Warp Portal Hosts. It is responsible for
 - revokes user access.
 - sends logs to a remote server.
 - rotates host certificates.
+
+## Start NSS Proxy
+
+```bash
+PRONTERA_URL=http://localhost:8080 kafra nss start
+```

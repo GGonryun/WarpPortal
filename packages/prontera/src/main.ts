@@ -3,22 +3,17 @@
  * This is only a minimal backend to get started.
  */
 
-import express from 'express';
+import express, { Application } from 'express';
 import * as bodyParser from 'body-parser';
 import morgan from 'morgan';
-import { passwdRouter } from './routes/passwd';
-import { groupRouter } from './routes/group';
-import { shadowRouter } from './routes/shadow';
 import { portalRouter } from './routes/portal/router';
+import { guildRouter } from './routes/guild/router';
 
-const app = express();
+export const app: Application = express();
 app.use(morgan('combined'));
 app.use(bodyParser.json());
 
-passwdRouter(app);
-groupRouter(app);
-shadowRouter(app);
-
+app.use('/guild', guildRouter);
 app.use('/portal', portalRouter);
 
 const port = process.env.PORT || 3333;

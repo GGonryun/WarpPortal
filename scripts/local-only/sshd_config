@@ -1,4 +1,0 @@
-AuthorizedKeysCommand /usr/local/bin/verify_ssh_cert.sh %t %k %u
-AuthorizedKeysCommandUser root
-PubkeyAuthentication yes
-AuthorizedKeysFile none

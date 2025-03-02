@@ -1,7 +1,10 @@
-import { Request, Response } from 'express';
-import { portalRouter } from './router';
-import { getSerial, readTrustedCertificate, tryParseCertificate } from './util';
-import { PolicyAction } from '@warpportal/prisma';
+import { Request, Response, Router } from 'express';
+import {
+  getSerial,
+  readTrustedCertificate,
+  tryParseCertificate,
+  tryValidatePolicy,
+} from './util';
 import { Certificate } from 'sshpk';
 
 const tryValidateCertificateRevocation = async (certificate: Certificate) => {
@@ -11,11 +14,7 @@ const tryValidateCertificateRevocation = async (certificate: Certificate) => {
     },
   });
 
-  if (!check) {
-    throw new Error('Certificate was not issued by the CA');
-  }
-
-  if (check.revokedAt) {
+  if (check && check.revokedAt) {
     throw new Error('Certificate has been revoked');
   }
 };
@@ -54,7 +53,19 @@ const tryValidateUserPrincipal = async (certificate: Certificate) => {
     throw new Error('User does not exist in directory');
   }
 
-  return user.local;
+  return user;
+};
+
+const tryValidateDestination = async (hostname: string) => {
+  const destination = await prisma.destination.findFirst({
+    where: {
+      hostname,
+    },
+  });
+  if (!destination) {
+    throw new Error('Destination does not exist');
+  }
+  return destination;
 };
 
 const tryValidateCertificateExpiration = (certificate: Certificate) => {
@@ -63,37 +74,10 @@ const tryValidateCertificateExpiration = (certificate: Certificate) => {
   }
 };
 
-const tryValidatePolicy = async (principal: string, hostname: string) => {
-  const policies = await prisma.policy.findMany({
-    where: {
-      source: principal,
-      destination: hostname,
-    },
-  });
-
-  if (policies.length === 0) {
-    throw new Error('Policy does not exist');
-  }
-
-  if (policies.some((policy) => policy.action === 'DENY')) {
-    throw new Error('Policy is DENY');
-  }
-
-  if (
-    !policies.some((policy) =>
-      [PolicyAction.SUDO, PolicyAction.ALLOW].some(
-        (action) => action === policy.action
-      )
-    )
-  ) {
-    throw new Error('Policy is not ALLOW or SUDO');
-  }
-};
-
 const verifyCertificate = async (
   hostname: string,
   publicKey: string
-): Promise<string | undefined> => {
+): Promise<{ authority: string } | undefined> => {
   const sshCert = tryParseCertificate(publicKey);
 
   // The certificate must be signed by the trusted CA
@@ -104,18 +88,27 @@ const verifyCertificate = async (
   await tryValidateCertificateRevocation(sshCert);
   // The certificate must have a valid user principal
   const principal = await tryValidateUserPrincipal(sshCert);
+  const destination = await tryValidateDestination(hostname);
   // the certificate's principal has a policy granting access to the server
-  tryValidatePolicy(principal, hostname);
+  await tryValidatePolicy(principal, destination);
   // return valid access key
-  return `cert-authority ${ca}`;
+  return { authority: ca };
 };
 
-portalRouter.post('/access', async (req: Request, res: Response) => {
-  const { 'public-key': publicKey, destination } = req.body;
+export const accessRouter: Router = Router({ mergeParams: true });
+
+accessRouter.post('/', async (req: Request, res: Response) => {
+  const { 'public-key': publicKey, destination, bypass } = req.body;
 
   try {
-    res.send(await verifyCertificate(destination, publicKey));
+    if (bypass) {
+      const { raw } = await readTrustedCertificate();
+      res.send({ authority: raw });
+    } else {
+      res.send(await verifyCertificate(destination, publicKey));
+    }
   } catch (error: any) {
+    console.error(error);
     res.status(403).send({
       error: error.message,
     });

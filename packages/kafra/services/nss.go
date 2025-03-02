@@ -30,7 +30,7 @@ func (n *NSS) fetchFromProntera(endpoint string, c *gin.Context, result any) err
 
 func (n *NSS) getPasswd(c *gin.Context) {
 	var passwdData any
-	if err := n.fetchFromProntera("passwd", c, &passwdData); err != nil {
+	if err := n.fetchFromProntera("guild/passwd", c, &passwdData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -39,7 +39,7 @@ func (n *NSS) getPasswd(c *gin.Context) {
 
 func (n *NSS) getGroup(c *gin.Context) {
 	var groupData any
-	if err := n.fetchFromProntera("group", c, &groupData); err != nil {
+	if err := n.fetchFromProntera("guild/group", c, &groupData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -48,7 +48,7 @@ func (n *NSS) getGroup(c *gin.Context) {
 
 func (n *NSS) getShadow(c *gin.Context) {
 	var shadowData any
-	if err := n.fetchFromProntera("shadow", c, &shadowData); err != nil {
+	if err := n.fetchFromProntera("guild/shadow", c, &shadowData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

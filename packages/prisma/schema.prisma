@@ -9,15 +9,15 @@ datasource db {
 }
 
 model User {
-  id             Int              @id @default(autoincrement())
-  email          String           @unique
-  name           String
-  shell          String
-  local          String           @unique
-  domain         String
-  hash           Int
-  UserAttributes UserAttributes[]
-  Certificates   Certificate[]
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  name         String
+  shell        String
+  local        String        @unique
+  domain       String
+  hash         Int
+  Certificates Certificate[]
+  Policies     Policy[]
 }
 
 enum PolicyAction {
@@ -27,16 +27,18 @@ enum PolicyAction {
 }
 
 model Policy {
-  id          String       @id @default(cuid())
-  source      String
-  destination String
-  action      PolicyAction
+  id            String       @id @default(cuid())
+  userId        Int
+  user          User         @relation(fields: [userId], references: [id])
+  destinationId String
+  destination   Destination  @relation(fields: [destinationId], references: [id])
+  action        PolicyAction
 }
 
 model Certificate {
   id          String    @id @default(cuid())
-  fingerprint String    @unique
   serial      BigInt    @unique
+  fingerprint String
   publicKey   String
   user        User      @relation(fields: [userId], references: [id])
   userId      Int
@@ -45,12 +47,21 @@ model Certificate {
   createdAt   DateTime
 }
 
-model UserAttributes {
-  id     String @id @default(cuid())
-  user   User   @relation(fields: [userId], references: [id])
-  userId Int
-  key    String
-  value  String
-
-  @@unique([userId, key])
+model Destination {
+  id       String   @id @default(cuid())
+  hostname String   @unique
+  ip       String
+  Policy   Policy[]
 }
+
+// model UserAttributes {
+//   id     String @id @default(cuid())
+//   user   User   @relation(fields: [userId], references: [id])
+//   userId Int
+//   key    String
+//   value  String
+
+//   @@unique([userId, key])
+// }
+
+// user is going to say `warp <local>@<destination>` but obviously in the future we'll use real log in

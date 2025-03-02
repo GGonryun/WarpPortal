@@ -22,6 +22,8 @@ func main() {
 		services.ProactiveListener(command)
 	case "nss":
 		services.NameServiceSwitchProxy(command)
+	case "portal":
+		services.PortalProcessor(command)
 	case "session":
 		services.SessionProcessor(command)
 	default:

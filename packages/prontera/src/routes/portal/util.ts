@@ -1,3 +1,4 @@
+import { Destination, PolicyAction, User } from '@warpportal/prisma';
 import { readFile } from 'fs/promises';
 import { Certificate, parseCertificate, parseKey } from 'sshpk';
 
@@ -59,4 +60,34 @@ export const readTrustedCertificate = async () => {
   const raw = await readFile(trustedCA, 'utf8');
   const key = parseKey(raw, 'ssh');
   return { key, raw };
+};
+
+export const tryValidatePolicy = async (
+  user: User,
+  destination: Destination
+) => {
+  const policies = await prisma.policy.findMany({
+    where: {
+      userId: user.id,
+      destinationId: destination.id,
+    },
+  });
+
+  if (policies.length === 0) {
+    throw new Error('Policy does not exist');
+  }
+
+  if (policies.some((policy) => policy.action === 'DENY')) {
+    throw new Error('Policy is DENY');
+  }
+
+  if (
+    !policies.some((policy) =>
+      [PolicyAction.SUDO, PolicyAction.ALLOW].some(
+        (action) => action === policy.action
+      )
+    )
+  ) {
+    throw new Error('Policy is not ALLOW or SUDO');
+  }
 };
