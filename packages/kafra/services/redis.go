@@ -9,24 +9,36 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func ProactiveListener(command string) {
+type ProactiveService struct {
+	config settings.Config
+	logger settings.FileLogger
+}
+
+func NewProactiveService(config settings.Config) *ProactiveService {
+	return &ProactiveService{
+		config: config,
+		logger: settings.NewFileLogger(config),
+	}
+}
+
+func (p *ProactiveService) Run(command string) {
 	switch command {
 	case "start":
-		startProactiveListener()
+		p.startProactiveListener()
 	default:
 		fmt.Printf("Unknown command for ProactiveListener: %s\n", command)
 	}
 }
 
-func startProactiveListener() {
+func (p *ProactiveService) startProactiveListener() {
 	fmt.Println("Listening to Redis")
 	ctx := context.Background()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr: settings.REDIS_ADDRESS,
+		Addr: p.config.RedisAddress,
 	})
 
-	pubsub := rdb.Subscribe(ctx, settings.REDIS_CHANNEL_ID)
+	pubsub := rdb.Subscribe(ctx, p.config.RedisChannelId)
 
 	defer pubsub.Close()
 

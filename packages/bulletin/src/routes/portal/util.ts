@@ -27,7 +27,9 @@ export const hexToDecimal = (hex: string) => {
   return parseInt(hex, 16);
 };
 
-export const tryParseCertificate = (certificate: string): Certificate => {
+export const tryParseCertificate = async (
+  certificate: string
+): Promise<Certificate> => {
   try {
     return parseCertificate(certificate, 'openssh');
   } catch (error) {

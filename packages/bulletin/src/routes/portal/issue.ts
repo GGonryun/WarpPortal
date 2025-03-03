@@ -46,7 +46,7 @@ const generateCertificate = async (
 
   // read the content of the certificate
   const raw = await fs.readFile(`${identity}-cert.pub`, 'utf8');
-  const parsed = tryParseCertificate(raw);
+  const parsed = await tryParseCertificate(raw);
 
   // clean up
   await execAsync(`rm -rf ${identity}*`);

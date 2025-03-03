@@ -5,20 +5,19 @@
    ~~2.3. the certificate matches the principal name of the user.~~
    ~~2.4. the certificate's principal has a policy granting access to the server.~~
    ~~2.5. the certificate has not been revoked by the CA.~~
-3. Create the Warp CLI that allows the user to generate certificates for registered servers.
-4. Create a PAM sshd session module that creates the user's home directory and gives the user ownership on their first sign up if the user doesn't exist in the /etc/passwd file.
-   2.6. add the user to the `sudo_admins` group if the certificate includes the 'sudo' grant.
-5. Create a PAM sshd session module that removes the user from sudo_admins on log out.
-6. Listen to a revocation signal from Kafra that automatically logs the user out of the system.
-7. Create a registration script that registers a server with Prontera and uploads information like hostname and more.
-8. Create the policy engine that checks to see what permissions a user has on a server.
-
-9. Allow a user to send bash scripts to the server for execution. This would allow us to log into servers by inserting data into the authorized_keys file.
+3. ~~Create the Warp CLI that allows the user to generate certificates for registered servers.~~
+4. ~~Create a PAM sshd session module that creates the user's home directory and gives the user ownership on their first sign up if the user doesn't exist in the /etc/passwd file.~~
+   2.6. ~~add the user to the `sudo_admins` group if a policy includes the 'sudo' grant.~~
+5. ~~Create a PAM sshd session module that removes the user from sudo_admins on log out.~~
+6. ~~Create a registration script that registers a server with Prontera and uploads information like hostname and more.~~
+7. ~~Create the policy engine that checks to see what permissions a user has on a server.~~
+8. ~~Create an installation script that configures a node from scratch for certificate based authentication.~~
 
 --- Stretch Goals ---
 
-0. Create an installation script that configures a node from scratch for certificate based authentication.
-1. Create a PAM sudo session module that checks with the the Prontera portal if the user has sudo access
-2. Create a PAM su module that gives the user su permissions if the certificate is valid.
-3. Create a watchdog service that removes access if any kafra service starts failing.
-4. Create an audit service that sends recent commands to Prontera for logging.
+8. Allow a user to send bash scripts to the server for execution. This would allow us to log into servers by inserting data into the authorized_keys file.
+9. Listen to a revocation signal from Kafra that automatically logs the user out of the system.
+10. Create a PAM sudo session module that checks with the the Prontera portal if the user has sudo access
+11. Create a PAM su module that gives the user su permissions if the certificate is valid.
+12. Create a watchdog service that removes access if any kafra service starts failing.
+13. Create an audit service that sends recent commands to Prontera for logging.

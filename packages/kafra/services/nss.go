@@ -9,13 +9,40 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// NSS struct to hold service URL
-type NSS struct {
-	ServiceURL string
+type NameSwitchService struct {
+	config settings.Config
+	logger settings.FileLogger
 }
 
-func (n *NSS) fetchFromBulletin(endpoint string, c *gin.Context, result any) error {
-	url := fmt.Sprintf("%s/%s?%s", n.ServiceURL, endpoint, c.Request.URL.RawQuery)
+func NewNameSwitchService(config settings.Config) *NameSwitchService {
+	return &NameSwitchService{
+		config: config,
+		logger: settings.NewFileLogger(config),
+	}
+}
+
+func (n *NameSwitchService) Run(command string) {
+	switch command {
+	case "start":
+		n.startNameServiceSwitchProxy()
+	default:
+		fmt.Printf("Unknown command for NameServiceSwitchProxy: %s\n", command)
+	}
+}
+
+func (n *NameSwitchService) startNameServiceSwitchProxy() {
+	r := gin.Default()
+	gin.SetMode(gin.DebugMode)
+
+	r.GET("/passwd", n.getPasswd)
+	r.GET("/group", n.getGroup)
+	r.GET("/shadow", n.getShadow)
+
+	r.Run("localhost:9669")
+}
+
+func (n *NameSwitchService) fetchFromBulletin(endpoint string, c *gin.Context, result any) error {
+	url := fmt.Sprintf("%s/%s?%s", n.config.BulletinUrl, endpoint, c.Request.URL.RawQuery)
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -29,7 +56,7 @@ func (n *NSS) fetchFromBulletin(endpoint string, c *gin.Context, result any) err
 	return json.NewDecoder(resp.Body).Decode(result)
 }
 
-func (n *NSS) getPasswd(c *gin.Context) {
+func (n *NameSwitchService) getPasswd(c *gin.Context) {
 	var passwdData any
 	if err := n.fetchFromBulletin("guild/passwd", c, &passwdData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -38,7 +65,7 @@ func (n *NSS) getPasswd(c *gin.Context) {
 	c.JSON(http.StatusOK, passwdData)
 }
 
-func (n *NSS) getGroup(c *gin.Context) {
+func (n *NameSwitchService) getGroup(c *gin.Context) {
 	var groupData any
 	if err := n.fetchFromBulletin("guild/group", c, &groupData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -47,32 +74,11 @@ func (n *NSS) getGroup(c *gin.Context) {
 	c.JSON(http.StatusOK, groupData)
 }
 
-func (n *NSS) getShadow(c *gin.Context) {
+func (n *NameSwitchService) getShadow(c *gin.Context) {
 	var shadowData any
 	if err := n.fetchFromBulletin("guild/shadow", c, &shadowData); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, shadowData)
-}
-
-func startNameServiceSwitchProxy() {
-	nss := NSS{ServiceURL: settings.BULLETIN_URL}
-	r := gin.Default()
-	gin.SetMode(gin.DebugMode)
-
-	r.GET("/passwd", nss.getPasswd)
-	r.GET("/group", nss.getGroup)
-	r.GET("/shadow", nss.getShadow)
-
-	r.Run("localhost:9669")
-}
-
-func NameServiceSwitchProxy(command string) {
-	switch command {
-	case "start":
-		startNameServiceSwitchProxy()
-	default:
-		fmt.Printf("Unknown command for NameServiceSwitchProxy: %s\n", command)
-	}
 }

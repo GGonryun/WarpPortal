@@ -5,13 +5,9 @@ set -e  # Exit immediately if a command fails
 REPO_URL="https://github.com/gmjosack/nss_http.git"
 TARGET_DIR=/usr/local/src/nss_http
 KAFRA_PATH=/usr/local/bin/kafra
-WRAPPER_PATH=/usr/local/bin/kafra-wrapper.sh
 LOG_FILE_PATH=/var/log/kafra.log
 SUDO_GROUP_NAME=warp-admins
 SUDOERS_FILE="/etc/sudoers.d/warp"
-
-BULLETIN_URL=https://thick-ties-pump.loca.lt
-
 
 echo "🔍 Checking if the script is run as root..."
 if [ "$(id -u)" -ne 0 ]; then
@@ -95,21 +91,6 @@ sudo sed -i.bak 's/^group:.*/# &\ngroup:          files systemd http/' /etc/nssw
 sudo sed -i.bak 's/^shadow:.*/# &\nshadow:         files http/' /etc/nsswitch.conf
 echo "✅ nsswitch.conf updated!"
 
-echo "🔧 Deploying wrapper script to $WRAPPER_PATH..."
-sudo tee "$WRAPPER_PATH" > /dev/null << EOF
-#!/bin/bash
-
-# Manually set environment variables
-export BULLETIN_URL="$BULLETIN_URL"
-export LOG_FILE_PATH="$LOG_FILE_PATH"
-
-# Pass arguments to the actual command
-exec $KAFRA_PATH "\$@"
-EOF
-sudo chmod +x "$WRAPPER_PATH"
-sudo chown root:root "$WRAPPER_PATH"
-echo "✅ Wrapper script deployed!"
-
 echo "🔧 Updating sshd_config..."
 # Remove existing occurrences of the settings to avoid duplicates
 sudo sed -i '/^AllowUsers /d' /etc/ssh/sshd_config
@@ -119,7 +100,7 @@ sudo sed -i '/^ChallengeResponseAuthentication /d' /etc/ssh/sshd_config
 sudo sed -i '/^AuthorizedKeysCommand /d' /etc/ssh/sshd_config
 sudo sed -i '/^AuthorizedKeysCommandUser /d' /etc/ssh/sshd_config
 # Append new settings at the end of the file
-echo -e "AllowUsers *\nPasswordAuthentication no\nAuthenticationMethods publickey\nChallengeResponseAuthentication no\nAuthorizedKeysCommand $WRAPPER_PATH portal access %t %k %u\nAuthorizedKeysCommandUser root" | sudo tee -a /etc/ssh/sshd_config
+echo -e "AllowUsers *\nPasswordAuthentication no\nAuthenticationMethods publickey\nChallengeResponseAuthentication no\nAuthorizedKeysCommand $KAFRA_PATH portal access %t %k %u\nAuthorizedKeysCommandUser root" | sudo tee -a /etc/ssh/sshd_config
 echo "✅ sshd_config updated!"
 
 echo "🔧 Updating /etc/pam.d/sshd..."
@@ -128,7 +109,7 @@ sudo sed -i '/pam_permit.so\|pam_unix.so\|pam_mkhomedir.so/d' /etc/pam.d/sshd
 sudo sed -i '1i account     sufficient  pam_permit.so\naccount     required    pam_unix.so\nsession     required    pam_mkhomedir.so' /etc/pam.d/sshd
 # Set up session processor
 if ! grep -q 'pam_exec.so.*kafra' /etc/pam.d/sshd; then
-    echo "session     optional    pam_exec.so seteuid $WRAPPER_PATH session process" | sudo tee -a /etc/pam.d/sshd
+    echo "session     optional    pam_exec.so seteuid $KAFRA_PATH session process" | sudo tee -a /etc/pam.d/sshd
 else
     echo "⚪ Session processor already exists in /etc/pam.d/sshd"
 fi

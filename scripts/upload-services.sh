@@ -1,6 +1,6 @@
 #!/bin/bash
-HOST_IP=34.94.124.45
-USER_IDENTITY=controller
+HOST_IP=
+USER_IDENTITY=poring
 
 SERVICE_ROOT=$HOME/src/warpportal
 CERTIFICATE_ROOT=$SERVICE_ROOT/certificates

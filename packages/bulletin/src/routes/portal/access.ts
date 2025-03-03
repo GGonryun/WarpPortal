@@ -78,8 +78,7 @@ const verifyCertificate = async (
   hostname: string,
   publicKey: string
 ): Promise<{ authority: string } | undefined> => {
-  const sshCert = tryParseCertificate(publicKey);
-
+  const sshCert = await tryParseCertificate(publicKey);
   // The certificate must be signed by the trusted CA
   const ca = await tryValidateCertificateSignature(sshCert);
   // The certificate must not be expired
@@ -101,7 +100,7 @@ accessRouter.post('/', async (req: Request, res: Response) => {
   const { 'public-key': publicKey, destination, bypass } = req.body;
 
   try {
-    if (bypass) {
+    if (bypass && bypass === 'true') {
       const { raw } = await readTrustedCertificate();
       res.send({ authority: raw });
     } else {

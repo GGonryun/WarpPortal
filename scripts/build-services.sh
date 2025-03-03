@@ -4,7 +4,7 @@ SERVICE_ROOT=$HOME/src/warpportal
 DIST_ROOT=$SERVICE_ROOT/dist
 PACKAGES_ROOT=$SERVICE_ROOT/packages
 
-BUILD_SUFFIX=-linux-amd64
+BUILD_FOLDER=linux-amd64
 
 # for every service build and upload
 SERVICES=(
@@ -12,7 +12,7 @@ SERVICES=(
 )
 for SERVICE in "${SERVICES[@]}"
 do
-    OUTPUT_FILE=$DIST_ROOT/$SERVICE$BUILD_SUFFIX
+    OUTPUT_FILE=$DIST_ROOT/$BUILD_FOLDER/$SERVICE
     INPUT_FILE=$PACKAGES_ROOT/$SERVICE/main.go
 
     echo "📦 Building $SERVICE"
@@ -20,4 +20,4 @@ do
     echo "🎉 $SERVICE built!"
 
 done
-echo "🎉 All services published!"
+echo "🎉 All services built!"

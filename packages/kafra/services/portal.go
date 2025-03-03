@@ -10,18 +10,30 @@ import (
 	"packages/kafra/settings"
 )
 
-func PortalProcessor(command string) {
+type PortalService struct {
+	config settings.Config
+	logger settings.FileLogger
+}
+
+func NewPortalService(config settings.Config) *PortalService {
+	return &PortalService{
+		config: config,
+		logger: settings.NewFileLogger(config),
+	}
+}
+
+func (p *PortalService) Run(command string) {
 	switch command {
 	case "access":
-		checkPortalAccess(false)
+		p.checkPortalAccess(false)
 	case "bypass":
-		checkPortalAccess(true)
+		p.checkPortalAccess(true)
 	default:
 		fmt.Printf("Unknown command for Portal Processor: %s\n", command)
 	}
 }
 
-func checkPortalAccess(bypass bool) {
+func (p *PortalService) checkPortalAccess(bypass bool) {
 	if len(os.Args) != 6 {
 		log.Println("Usage: portal access <key_type> <cert> <user>")
 		os.Exit(1)
@@ -50,9 +62,7 @@ func checkPortalAccess(bypass bool) {
 
 	publicKey := fmt.Sprintf("%s %s %s", keyType, cert, user)
 
-	logMsg := fmt.Sprintf("Checking portal access for '%s' to server '%s' using public key '%s'", user, hostname, "<redacted>")
-
-	err = writeToLogs(logMsg)
+	err = p.logger.Write(fmt.Sprintf("Checking portal access for '%s' to server '%s' using public key '%s'", user, hostname, "<redacted>"))
 	if err != nil {
 		log.Println("Error writing to logs:", err)
 		os.Exit(1)
@@ -70,7 +80,7 @@ func checkPortalAccess(bypass bool) {
 		return
 	}
 
-	url := fmt.Sprintf("%s/portal/access", settings.BULLETIN_URL)
+	url := fmt.Sprintf("%s/portal/access", p.config.BulletinUrl)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		log.Println("Error making request:", err)

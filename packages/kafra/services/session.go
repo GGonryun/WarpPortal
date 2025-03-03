@@ -12,16 +12,28 @@ import (
 	"strings"
 )
 
-func SessionProcessor(command string) {
-	switch command {
-	case "process":
-		processSession()
-	default:
-		fmt.Printf("Unknown command for Portal Processor: %s\n", command)
+type SessionService struct {
+	config settings.Config
+	logger settings.FileLogger
+}
+
+func NewSessionService(config settings.Config) *SessionService {
+	return &SessionService{
+		config: config,
+		logger: settings.NewFileLogger(config),
 	}
 }
 
-func processSession() {
+func (p *SessionService) Run(command string) {
+	switch command {
+	case "process":
+		p.processSession()
+	default:
+		fmt.Printf("Unknown command for Portal Processor: %s", command)
+	}
+}
+
+func (p *SessionService) processSession() {
 	log.Println("SessionProcessor started")
 	// Get PAM environment variables
 	pamType := os.Getenv("PAM_TYPE")
@@ -34,21 +46,26 @@ func processSession() {
 	}
 
 	if pamType == "open_session" {
-		err := startSession(pamUser, pamRhost)
+		err := p.startSession(pamUser, pamRhost)
 		if err != nil {
-			writeToLogs(fmt.Sprintf("Error starting session: %v", err))
+			p.logger.Write(fmt.Sprintf("Error starting session: %v", err))
+			cmd := exec.Command("/usr/bin/pkill", "-u", pamUser)
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				p.logger.Write(fmt.Sprintf("Failed to kill user session: %v, output: %s", err, string(output)))
+			}
 			os.Exit(1)
 			return
 		}
 	} else if pamType == "close_session" {
-		err := endSession(pamUser, pamRhost)
+		err := p.endSession(pamUser, pamRhost)
 		if err != nil {
-			writeToLogs(fmt.Sprintf("Error closing session: %v", err))
+			p.logger.Write(fmt.Sprintf("Error closing session: %v", err))
 			os.Exit(1)
 			return
 		}
 	} else {
-		writeToLogs(fmt.Sprintf("Ignoring PAM event type: %s", pamType))
+		p.logger.Write(fmt.Sprintf("Ignoring PAM event type: %s", pamType))
 		os.Exit(1) // Ignore other PAM event types
 		return
 	}
@@ -57,13 +74,18 @@ func processSession() {
 	os.Exit(0)
 }
 
-func startSession(pamUser, pamRhost string) error {
-	err := writeToLogs(fmt.Sprintf("SSH session started for user '%s' from '%s'\n", pamUser, pamRhost))
+func (p *SessionService) startSession(pamUser, pamRhost string) error {
+	err := p.logger.Write(fmt.Sprintf("SSH session started for user '%s' from '%s'", pamUser, pamRhost))
 	if err != nil {
 		return err
 	}
 
-	resp, err := http.Get(fmt.Sprintf("%s/guild/info?local=%s", settings.BULLETIN_URL, pamUser))
+	destination, err := os.Hostname()
+	if err != nil {
+		return fmt.Errorf("failed to get hostname: %v", err)
+	}
+
+	resp, err := http.Get(fmt.Sprintf("%s/guild/info?local=%s&destination=%s", p.config.BulletinUrl, pamUser, destination))
 	if err != nil {
 		return fmt.Errorf("failed to query backend: %v", err)
 	}
@@ -85,17 +107,11 @@ func startSession(pamUser, pamRhost string) error {
 	}
 
 	if userInfo.Action == "DENY" {
-		cmd := exec.Command("/usr/bin/pkill", "-u", pamUser)
-		output, err := cmd.CombinedOutput()
+		err = p.logger.Write(fmt.Sprintf("User session killed for '%s' due to DENY action", pamUser))
 		if err != nil {
-			return fmt.Errorf("failed to kill user session: %v, output: %s", err, string(output))
+			return fmt.Errorf("failed to write to log: %v", err)
 		}
-		msg := fmt.Sprintf("User session killed for '%s' due to DENY action", pamUser)
-		err = writeToLogs(msg)
-		if err != nil {
-			return err
-		}
-		return nil
+		return fmt.Errorf("access denied for user '%s'", pamUser)
 	}
 
 	// Check if user exists in /etc/passwd
@@ -107,18 +123,17 @@ func startSession(pamUser, pamRhost string) error {
 		shadowEntry := fmt.Sprintf("%s:!:20148:0:99999:7:::\n", pamUser)
 
 		// Append entries to respective files
-		if err := appendToFile("/etc/passwd", passwdEntry); err != nil {
+		if err := p.appendToFile("/etc/passwd", passwdEntry); err != nil {
 			return fmt.Errorf("failed to add user to /etc/passwd: %v", err)
 		}
-		if err := appendToFile("/etc/group", groupEntry); err != nil {
+		if err := p.appendToFile("/etc/group", groupEntry); err != nil {
 			return fmt.Errorf("failed to add user to /etc/group: %v", err)
 		}
-		if err := appendToFile("/etc/shadow", shadowEntry); err != nil {
+		if err := p.appendToFile("/etc/shadow", shadowEntry); err != nil {
 			return fmt.Errorf("failed to add user to /etc/shadow: %v", err)
 		}
 
-		msg := fmt.Sprintf("User '%s' added to system", pamUser)
-		err = writeToLogs(msg)
+		err = p.logger.Write(fmt.Sprintf("User '%s' added to system", pamUser))
 		if err != nil {
 			return err
 		}
@@ -130,15 +145,13 @@ func startSession(pamUser, pamRhost string) error {
 		if err != nil {
 			return fmt.Errorf("failed to add user to warp-admins group: %v, output: %s", err, string(output))
 		}
-		msg := fmt.Sprintf("User '%s' added to warp-admins group", pamUser)
-		err = writeToLogs(msg)
+		err = p.logger.Write(fmt.Sprintf("User '%s' added to warp-admins group", pamUser))
 		if err != nil {
 			return err
 		}
 	}
 
-	msg := fmt.Sprintf("User '%s' standard access has been granted", pamUser)
-	err = writeToLogs(msg)
+	err = p.logger.Write(fmt.Sprintf("User '%s' access has been granted", pamUser))
 	if err != nil {
 		return err
 	}
@@ -146,8 +159,8 @@ func startSession(pamUser, pamRhost string) error {
 	return nil
 }
 
-func endSession(pamUser string, pamRhost string) error {
-	err := writeToLogs((fmt.Sprintf("SSH session closed for user '%s' from '%s'\n", pamUser, pamRhost)))
+func (p *SessionService) endSession(pamUser string, pamRhost string) error {
+	err := p.logger.Write((fmt.Sprintf("SSH session closed for user '%s' from '%s'", pamUser, pamRhost)))
 	if err != nil {
 		return err
 	}
@@ -160,7 +173,7 @@ func endSession(pamUser string, pamRhost string) error {
 	}
 
 	if !strings.Contains(string(output), pamUser) {
-		err = writeToLogs(fmt.Sprintf("User '%s' is not a member of warp-admins group, skipping removal", pamUser))
+		err = p.logger.Write(fmt.Sprintf("User '%s' is not a member of warp-admins group, skipping removal", pamUser))
 		if err != nil {
 			return err
 		}
@@ -175,7 +188,7 @@ func endSession(pamUser string, pamRhost string) error {
 	}
 
 	// Save the output of the command to the log file
-	err = writeToLogs(fmt.Sprintf("Output of deluser command: %s\n", string(output)))
+	err = p.logger.Write(fmt.Sprintf("Output of deluser command: %s", string(output)))
 	if err != nil {
 		return err
 	}
@@ -183,7 +196,7 @@ func endSession(pamUser string, pamRhost string) error {
 	return nil
 }
 
-func appendToFile(filename, text string) error {
+func (p *SessionService) appendToFile(filename, text string) error {
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return err

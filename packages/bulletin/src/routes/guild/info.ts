@@ -3,20 +3,26 @@ import { PolicyAction, prisma } from '@warpportal/prisma';
 
 export const infoRouter: Router = Router({ mergeParams: true });
 
+const DENY_RESPONSE = {
+  action: 'DENY',
+  hash: -1,
+  name: '',
+};
+
 infoRouter.get('/', async (req, res) => {
   const { local, destination } = req.query;
+  if (!local || !destination) {
+    console.error('Cannot provide info: missing local or destination');
+    return res.json(DENY_RESPONSE);
+  }
+
   const user = await prisma.user.findFirst({
     where: {
       local: local as string,
     },
   });
   if (!user) {
-    res.json({
-      action: 'DENY',
-      hash: '',
-      name: '',
-    });
-    return;
+    return res.json(DENY_RESPONSE);
   }
 
   const server = await prisma.destination.findFirst({
@@ -25,12 +31,7 @@ infoRouter.get('/', async (req, res) => {
     },
   });
   if (!server) {
-    res.json({
-      action: 'DENY',
-      hash: '',
-      name: '',
-    });
-    return;
+    return res.json(DENY_RESPONSE);
   }
 
   const policies = await prisma.policy.findMany({
@@ -41,19 +42,11 @@ infoRouter.get('/', async (req, res) => {
   });
 
   if (!policies.length) {
-    res.json({
-      action: 'DENY',
-      hash: '',
-      name: '',
-    });
+    return res.json(DENY_RESPONSE);
   }
 
   if (policies.some((policy) => policy.action === 'DENY')) {
-    res.json({
-      action: 'DENY',
-      hash: '',
-      name: '',
-    });
+    return res.json(DENY_RESPONSE);
   }
 
   const sudo = policies.find((policy) => PolicyAction.SUDO === policy.action);
@@ -74,8 +67,7 @@ infoRouter.get('/', async (req, res) => {
     });
   }
 
-  res.send(403).json({
+  return res.send(403).json({
     message: 'Invalid policy actions found',
   });
-  return;
 });
