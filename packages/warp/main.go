@@ -17,8 +17,17 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-var BULLETIN_URL = "https://blue-snakes-cry.loca.lt"
-var CONFIG_PATH = "/Users/miguelcampos/.warp"
+// copied from kafra
+func getEnvironment(key string, fallback string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	return value
+}
+
+var BULLETIN_URL = getEnvironment("BULLETIN_URL", "http://localhost:3333")
+var CONFIG_PATH = getEnvironment("CONFIG_PATH", "/Users/miguelcampos/.warp")
 
 func main() {
 	if len(os.Args) < 2 {

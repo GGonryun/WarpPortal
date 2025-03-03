@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"packages/kafra/settings"
+
 	"github.com/redis/go-redis/v9"
 )
 
@@ -20,14 +22,11 @@ func startProactiveListener() {
 	fmt.Println("Listening to Redis")
 	ctx := context.Background()
 
-	addr := getEnvironment("REDIS_ADDRESS", "localhost:6379")
-	channel := getEnvironment("CHANNEL_ID", "kafra")
-
 	rdb := redis.NewClient(&redis.Options{
-		Addr: addr,
+		Addr: settings.REDIS_ADDRESS,
 	})
 
-	pubsub := rdb.Subscribe(ctx, channel)
+	pubsub := rdb.Subscribe(ctx, settings.REDIS_CHANNEL_ID)
 
 	defer pubsub.Close()
 

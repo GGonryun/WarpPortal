@@ -1,5 +1,5 @@
 #!/bin/bash
-HOST_IP=34.102.110.5
+HOST_IP=34.94.124.45
 USER_IDENTITY=controller
 
 SERVICE_ROOT=$HOME/src/warpportal
