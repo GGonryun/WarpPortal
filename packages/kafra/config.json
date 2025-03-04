@@ -1,5 +1,5 @@
 {
-    "bulletin_url": "https://clear-pandas-chew.loca.lt",
+    "bulletin_url": "https://eighty-crews-think.loca.lt",
     "log_file_path": "/var/log/kafra.log",
     "redis_address": "localhost:6379",
     "redis_channel_id": "kafra"
